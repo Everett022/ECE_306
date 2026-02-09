@@ -8,12 +8,16 @@ GEN_OPTS__FLAG :=
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
+"./clocks.obj" \
+"./display.obj" \
+"./init.obj" \
+"./led.obj" \
 "./main.obj" \
+"./motor.obj" \
+"./ports.obj" \
+"./system.obj" \
 "../Compiled/LCD.obj" \
-"../Compiled/clocks.obj" \
-"../Compiled/ports.obj" \
 "../Compiled/switches.obj" \
-"../Compiled/system.obj" \
 "../Compiled/timersB0.obj" \
 "../lnk_msp430fr2355.cmd" \
 $(GEN_CMDS__FLAG) \
@@ -148,8 +152,8 @@ Project03.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "main.obj" 
-	-$(RM) "main.d" 
+	-$(RM) "clocks.obj" "display.obj" "init.obj" "led.obj" "main.obj" "motor.obj" "ports.obj" "system.obj" 
+	-$(RM) "clocks.d" "display.d" "init.d" "led.d" "main.d" "motor.d" "ports.d" "system.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

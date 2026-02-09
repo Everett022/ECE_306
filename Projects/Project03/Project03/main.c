@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 //
 //  Description: This file contains the Main Routine - "While" Operating System
 //
@@ -8,43 +8,32 @@
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-#include  "msp430.h"
 #include  <string.h>
+#include  "msp430.h"
 #include  "functions.h"
 #include  "LCD.h"
 #include  "ports.h"
-
-#define ALWAYS                  (1)
-#define RESET_STATE             (0)
-#define RED_LED              (0x01) // RED LED 0
-#define GRN_LED              (0x40) // GREEN LED 1
-#define TEST_PROBE           (0x01) // 0 TEST PROBE
-#define TRUE                 (0x01) //
+#include  "macros.h"
 
 // Function Prototypes
 void main(void);
 void Init_Conditions(void);
-void Display_Process(void);
 void Init_LEDs(void);
 void Carlson_StateMachine(void);
 
-  // Global Variables
+ // Global Variables
 volatile char slow_input_down;
-extern char display_line[4][11];
-extern char *display[4];
 unsigned char display_mode;
-extern volatile unsigned char display_changed;
-extern volatile unsigned char update_display;
 extern volatile unsigned int update_display_count;
-extern volatile unsigned int Time_Sequence;
-extern volatile char one_time;
+extern volatile unsigned char display_changed;
+extern char display_line[4][11];
 unsigned int test_value;
 char chosen_direction;
 char change;
-
 unsigned int wheel_move;
 char forward;
-
+unsigned int old_Time_Sequence;     //Variable added to create a new time variable from Time_Sequence
+unsigned int mytime;                //Another variable added to create a new time variable
 
 
 //void main(void){
@@ -80,6 +69,11 @@ void main(void){
   forward = TRUE;
 
 //------------------------------------------------------------------------------
+// Motor control code - Project 3
+//------------------------------------------------------------------------------
+  forward_movement();
+
+//------------------------------------------------------------------------------
 // Begining of the "While" Operating System
 //------------------------------------------------------------------------------
   while(ALWAYS) {                      // Can the Operating system run
@@ -87,98 +81,8 @@ void main(void){
     Switches_Process();                // Check for switch state change
     Display_Process();                 // Update Display
     P3OUT ^= TEST_PROBE;               // Change State of TEST_PROBE OFF
+
   }
 //------------------------------------------------------------------------------
 
 }
-
-void Init_Conditions(void){
-//------------------------------------------------------------------------------
-
-  int i;
-  for(i=0;i<11;i++){
-    display_line[0][i] = RESET_STATE;
-    display_line[1][i] = RESET_STATE;
-    display_line[2][i] = RESET_STATE;
-    display_line[3][i] = RESET_STATE;
-  }
-  display_line[0][10] = 0;
-  display_line[1][10] = 0;
-  display_line[2][10] = 0;
-  display_line[3][10] = 0;
-
-  display[0] = &display_line[0][0];
-  display[1] = &display_line[1][0];
-  display[2] = &display_line[2][0];
-  display[3] = &display_line[3][0];
-  update_display = 0;
-
-
-// Interrupts are disabled by default, enable them.
-  enable_interrupts();
-//------------------------------------------------------------------------------
-}
-
-void Display_Process(void){
-  if(update_display){
-    update_display = 0;
-    if(display_changed){
-      display_changed = 0;
-      Display_Update(0,0,0,0);
-    }
-  }
-}
-
-void Init_LEDs(void){
-//------------------------------------------------------------------------------
-// LED Configurations
-//------------------------------------------------------------------------------
-// Turns on both LEDs
-  P1OUT &= ~RED_LED;
-  P6OUT &= ~GRN_LED;
-//------------------------------------------------------------------------------
-}
-
-void Carlson_StateMachine(void){
-    switch(Time_Sequence){
-      case 250:                        //
-        if(one_time){
-          Init_LEDs();
-          lcd_BIG_mid();
-          display_changed = 1;
-          one_time = 0;
-        }
-        Time_Sequence = 0;             //
-        break;
-      case 200:                        //
-        if(one_time){
-//          P1OUT &= ~RED_LED;            // Change State of LED 4
-          P6OUT |= GRN_LED;            // Change State of LED 5
-          one_time = 0;
-        }
-        break;
-      case 150:                         //
-        if(one_time){
-          P1OUT |= RED_LED;            // Change State of LED 4
-          P6OUT &= ~GRN_LED;            // Change State of LED 5
-          one_time = 0;
-        }
-        break;
-      case 100:                         //
-        if(one_time){
-//          lcd_4line();
-          lcd_BIG_bot();
-          P6OUT |= GRN_LED;            // Change State of LED 5
-          display_changed = 1;
-          one_time = 0;
-        }
-        break;
-      case  50:                        //
-        if(one_time){
-          one_time = 0;
-        }
-        break;                         //
-      default: break;
-    }
-}
-

@@ -82,13 +82,14 @@ void Menu_Process(void);
 
 // Ports
 void Init_Ports(void);
-void Init_Port1(void);
-void Init_Port2(void);
+void Init_Port_1(void);
+void Init_Port_2(void);
+
 //void Init_Port3(char smclk);
-void Init_Port3(void);
-void Init_Port4(void);
-void Init_Port5(void);
-void Init_Port6(void);
+void Init_Port_3(void);
+void Init_Port_4(void);
+void Init_Port_5(void);
+void Init_Port_6(void);
 
 // SPI
 void Init_SPI_B1(void);
@@ -129,6 +130,7 @@ void five_msec_sleep(unsigned int msec);
 void measure_delay(void);
 void out_control_words(void);
 
-
-
-
+//Motors
+void forward_movement(void);
+void reverse_movement(void);
+void no_movement(void);
