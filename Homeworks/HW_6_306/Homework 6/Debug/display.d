@@ -11,6 +11,7 @@ display.obj: ../functions.h
 display.obj: ../LCD.h
 display.obj: ../ports.h
 display.obj: ../macros.h
+display.obj: ../globals.h
 
 ../display.c:
 
@@ -33,4 +34,6 @@ display.obj: ../macros.h
 ../ports.h:
 
 ../macros.h:
+
+../globals.h:
 

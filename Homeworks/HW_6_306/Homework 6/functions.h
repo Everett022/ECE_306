@@ -20,6 +20,9 @@ __interrupt void Timer0_B0_ISR(void);
 __interrupt void switch_interrupt(void);
 
 // Analog to Digital Converter
+void detect(void);
+void Init_ADC(void);
+int color (void);
 
 // Clocks
 void Init_Clocks(void);
@@ -125,6 +128,9 @@ void Init_Timer_B0(void);
 void Init_Timer_B1(void);
 void Init_Timer_B2(void);
 void Init_Timer_B3(void);
+void delay (int);
+void small_delay (int);
+
 
 void usleep(unsigned int usec);
 void usleep10(unsigned int usec);
@@ -144,6 +150,11 @@ void Run_Circle(void);
 void Run_Figure_8(void);
 void Run_Triangle(void);
 void project_5(void);
+
+//Movements
+void line_detection(void);
+void turn_line(void);
+
 
 
 

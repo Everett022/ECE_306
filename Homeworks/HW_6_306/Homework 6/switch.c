@@ -14,10 +14,7 @@
 #include  "LCD.h"
 #include  "ports.h"
 #include  "macros.h"
-
-extern volatile unsigned char event;
-extern volatile unsigned int state;
-extern volatile int mode;
+#include  "globals.h"
 
 unsigned char okay_to_look_at_switch1;
 unsigned char sw1_position;
@@ -28,9 +25,13 @@ unsigned char okay_to_look_at_switch2;
 unsigned char sw2_position;
 unsigned int count_debounce_SW2;
 unsigned int number_of_presses_2;
+
 volatile unsigned int switch_1_count = 0;
 volatile unsigned int switch_2_count = 0;
 unsigned int project_5_flag = 0;
+unsigned int line_detection_flag = 0;
+unsigned int first = 0;
+int mode_flag = 1;
 
 /* This used to be used for de-bounce back in project 4
 //Switch 1 is used for changing shape mode
@@ -80,40 +81,29 @@ void Switch2_Process(void){
 
 void Switch_mode(void){
     if(switch_1_count){
-        project_5_flag = 1;
         switch_1_count = 0;
 
-/*Code for project 4
-        if(event == NONE){
-            event = CIRCLE;
+        switch(condition){
+            case ON:
+                mode_flag = 1;
+                condition = OFF;
+                P2OUT &= ~IR_LED;
+                break;
+            case OFF:
+                mode_flag = 0;
+                condition = ON;
+                P2OUT |= IR_LED;
+                break;
+            default: break;
         }
-        else if(event == CIRCLE){
-            event = FIGURE_8;
-        }
-        else if(event == FIGURE_8){
-            event = TRIANGLE;
-        }
-        else{
-            event = CIRCLE;
-        }
-*/
     }
 }
 
 void Switch_mode_2(void){
     if(switch_2_count){
         switch_2_count = 0;
-
-        if(mode == USE_GPIO){
-            mode = USE_SMCLK;
-            P1OUT &= ~RED_LED;
-        }
-        else{
-            mode = USE_GPIO;
-
-            P1OUT |= RED_LED;
-        }
-        Init_Port_3();
+        line_detection_flag = 1;
+        first = 1;
 
     }
 }

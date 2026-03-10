@@ -11,6 +11,7 @@ shapes.obj: ../functions.h
 shapes.obj: ../LCD.h
 shapes.obj: ../ports.h
 shapes.obj: ../macros.h
+shapes.obj: ../globals.h
 
 ../shapes.c:
 
@@ -33,4 +34,6 @@ shapes.obj: ../macros.h
 ../ports.h:
 
 ../macros.h:
+
+../globals.h:
 

@@ -1,4 +1,6 @@
+"./adc.obj"
 "./clocks.obj"
+"./detect.obj"
 "./display.obj"
 "./init.obj"
 "./led.obj"

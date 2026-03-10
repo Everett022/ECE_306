@@ -15,11 +15,8 @@
 #include  "LCD.h"
 #include  "ports.h"
 #include  "macros.h"
+#include  "globals.h"
 
-//Global Variables
-extern char display_line[4][11];
-extern char *display[4];
-extern volatile unsigned char update_display;
 
 void Init_Conditions(void){
 //------------------------------------------------------------------------------

@@ -20,6 +20,8 @@
 #define USE_GPIO    (0x00)
 #define USE_SMCLK   (0x01)
 
+#define ON          (0x01)
+#define OFF         (0x00)
 
 //Defines that go for the switch
 #define OKAY 1
@@ -83,10 +85,13 @@
 
 //defines for the timers
 #define TB0CCR0_INTERVAL (1250)     //clock ticks every 8µs and 1250 of them are 10ms for time_sequence update
-#define TB0CCR1_INTERVAL (25000)    //debounce time for SW1
-#define TB0CCR2_INTERVAL (25000)    //debounce time for SW2
+#define TB0CCR1_INTERVAL (50000)    //debounce time for SW1
+#define TB0CCR2_INTERVAL (50000)    //debounce time for SW2
 
 #define TIMER_B0_CCR0_VECTOR TIMER0_B0_VECTOR
 #define TIMER_B0_CCR1_2_OV_VECTOR TIMER0_B1_VECTOR
+
+//PMW
+
 
 #endif /* MACROS_H_ */

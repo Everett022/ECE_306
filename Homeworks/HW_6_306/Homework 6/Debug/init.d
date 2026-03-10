@@ -16,6 +16,7 @@ init.obj: ../functions.h
 init.obj: ../LCD.h
 init.obj: ../ports.h
 init.obj: ../macros.h
+init.obj: ../globals.h
 
 ../init.c:
 
@@ -48,4 +49,6 @@ init.obj: ../macros.h
 ../ports.h:
 
 ../macros.h:
+
+../globals.h:
 

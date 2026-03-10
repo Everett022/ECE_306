@@ -16,6 +16,7 @@ switch.obj: ../functions.h
 switch.obj: ../LCD.h
 switch.obj: ../ports.h
 switch.obj: ../macros.h
+switch.obj: ../globals.h
 
 ../switch.c:
 
@@ -48,4 +49,6 @@ switch.obj: ../macros.h
 ../ports.h:
 
 ../macros.h:
+
+../globals.h:
 

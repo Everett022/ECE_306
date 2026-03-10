@@ -16,6 +16,7 @@ sequence.obj: ../functions.h
 sequence.obj: ../LCD.h
 sequence.obj: ../ports.h
 sequence.obj: ../macros.h
+sequence.obj: ../globals.h
 
 ../sequence.c:
 
@@ -48,4 +49,6 @@ sequence.obj: ../macros.h
 ../ports.h:
 
 ../macros.h:
+
+../globals.h:
 

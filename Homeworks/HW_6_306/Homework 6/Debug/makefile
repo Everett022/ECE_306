@@ -8,7 +8,9 @@ GEN_OPTS__FLAG :=
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
+"./adc.obj" \
 "./clocks.obj" \
+"./detect.obj" \
 "./display.obj" \
 "./init.obj" \
 "./led.obj" \
@@ -134,29 +136,29 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-Project05.out 
+Homework\ 6.out 
 
 EXE_OUTPUTS__QUOTED += \
-"Project05.out" 
+"Homework 6.out" 
 
 
 # All Target
 all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
-	@$(MAKE) --no-print-directory -Onone "Project05.out"
+	@$(MAKE) --no-print-directory -Onone "Homework 6.out"
 
 # Tool invocations
-Project05.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
+Homework\ 6.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: "$@"'
 	@echo 'Invoking: MSP430 Linker'
-	"/Applications/ti/ccs1281/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --advice:power=all --advice:hw_config=all --define=__MSP430FR2355__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 -z -m"Project05.map" --heap_size=160 --stack_size=160 --cinit_hold_wdt=on -i"/Applications/ti/ccs1281/ccs/ccs_base/msp430/include" -i"/Applications/ti/ccs1281/ccs/ccs_base/msp430/lib/FR2xx" -i"/Applications/ti/ccs1281/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/lib" -i"/Applications/ti/ccs1281/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --priority --reread_libs --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE --diag_wrap=off --display_error_number --warn_sections --xml_link_info="Project05_linkInfo.xml" --use_hw_mpy=F5 --rom_model -o "Project05.out" $(ORDERED_OBJS)
+	"/Applications/ti/ccs1281/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/bin/cl430" -vmspx --use_hw_mpy=F5 --advice:power=all --advice:hw_config=all --define=__MSP430FR2355__ --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 -z -m"Homework 6.map" --heap_size=160 --stack_size=160 --cinit_hold_wdt=on -i"/Applications/ti/ccs1281/ccs/ccs_base/msp430/include" -i"/Applications/ti/ccs1281/ccs/ccs_base/msp430/lib/FR2xx" -i"/Applications/ti/ccs1281/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/lib" -i"/Applications/ti/ccs1281/ccs/tools/compiler/ti-cgt-msp430_21.6.1.LTS/include" --priority --reread_libs --define=_FRWP_ENABLE --define=_INFO_FRWP_ENABLE --diag_wrap=off --display_error_number --warn_sections --xml_link_info="Homework 6_linkInfo.xml" --use_hw_mpy=F5 --rom_model -o "Homework 6.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: "$@"'
 	@echo ' '
 
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "clocks.obj" "display.obj" "init.obj" "led.obj" "main.obj" "motor.obj" "ports.obj" "sequence.obj" "shapes.obj" "switch.obj" "system.obj" "timerb0.obj" 
-	-$(RM) "clocks.d" "display.d" "init.d" "led.d" "main.d" "motor.d" "ports.d" "sequence.d" "shapes.d" "switch.d" "system.d" "timerb0.d" 
+	-$(RM) "adc.obj" "clocks.obj" "detect.obj" "display.obj" "init.obj" "led.obj" "main.obj" "motor.obj" "ports.obj" "sequence.obj" "shapes.obj" "switch.obj" "system.obj" "timerb0.obj" 
+	-$(RM) "adc.d" "clocks.d" "detect.d" "display.d" "init.d" "led.d" "main.d" "motor.d" "ports.d" "sequence.d" "shapes.d" "switch.d" "system.d" "timerb0.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

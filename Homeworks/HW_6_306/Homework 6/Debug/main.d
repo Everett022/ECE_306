@@ -16,6 +16,7 @@ main.obj: ../functions.h
 main.obj: ../LCD.h
 main.obj: ../ports.h
 main.obj: ../macros.h
+main.obj: ../globals.h
 
 ../main.c:
 
@@ -48,4 +49,6 @@ main.obj: ../macros.h
 ../ports.h:
 
 ../macros.h:
+
+../globals.h:
 

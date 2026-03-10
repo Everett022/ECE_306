@@ -14,15 +14,12 @@
 #include  "LCD.h"
 #include  "ports.h"
 #include  "macros.h"
+#include  "globals.h"
 
-extern unsigned int cycle_time;                            //a new time base used to control making shapes
-extern unsigned int time_change;                           //identifier that a change has occurred.
 unsigned int right_motor_count = 0;                 //declaration of the right motor tick counter
 unsigned int left_motor_count = 0;                  //declaration of the left motor tick counter
 unsigned int segment_count = 0;                     //a number that says how many "segments" should be ran
 unsigned int delay_start = 0;                       //count that indicates how many chunks of time have passed before start
-extern unsigned int state;
-extern unsigned char event;
 unsigned int figure8_count = 0;
 unsigned int triangle_count = 0;
 unsigned int triangle_second = 0;

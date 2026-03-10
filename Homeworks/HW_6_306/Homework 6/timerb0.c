@@ -1,0 +1,115 @@
+/*
+ * timerb0.c
+ *
+ *  Created on: Feb 23, 2026
+ *      Author: everettbrostedt
+ */
+
+#include <string.h>
+#include  "msp430.h"
+#include  "functions.h"
+#include  "LCD.h"
+#include  "ports.h"
+#include  "macros.h"
+
+unsigned int Time_Sequence = 0;
+volatile unsigned int one_second = 0;
+volatile unsigned int zero_point_one = 0;
+
+extern int mode_flag;
+unsigned char update_display;
+static unsigned int display_update_count = 0;
+static unsigned int second_count = 0;
+static unsigned int zero_count = 0;
+static unsigned int adc_count = 0;
+
+void Init_Timer_B0(void){
+//------------------------------------------------------------------------------
+// Timer B0 initialization sets up both B0_0 and B0_1 to B0_2 and OverFlow
+// 8,000,000 / 8 / 8 / [1/time]
+// 1,000,000 / 8 / [1/time]
+// 125,000 / [1/time]
+// 1/time => 1 / 8msec => 1 / 0.005 = 200
+// 125,000 / 200 = 625 – This is Capture Compare Register Interval
+// 8usec per clock tick
+//------------------------------------------------------------------------------
+ TB0CTL = TBSSEL__SMCLK; // SMCLK
+ TB0CTL |= MC__CONTINUOUS; // continuous mode
+ TB0CTL |= ID__8; // Divide clock by 8
+ TB0CTL |= TBCLR; // Clear Count
+ TB0EX0 = TBIDEX__8; // Second Divider - Divide clock by 8
+
+ TB0CCR0 = TB0CCR0_INTERVAL; // CCR0
+ TB0CCTL0 &= ~CCIFG; // Clear CCR0 interrupt flag
+ TB0CCTL0 |= CCIE; // CCR0 enable interrupt
+
+ TB0CCR1 = TB0CCR1_INTERVAL; // CCR1
+ TB0CCTL1 &= ~CCIFG; // Clear CCR1 interrupt flag
+ TB0CCTL1 &= ~CCIE; // CCR1 disable interrupt
+
+ TB0CCR2 = TB0CCR2_INTERVAL; // CCR2
+ TB0CCTL2 &= ~CCIFG; // Clear CCR2 interrupt flag
+ TB0CCTL2 &= ~CCIE; // CCR2 disable interrupt
+
+ TB0CTL &= ~TBIE; // Timer A0 overflow interrupt disable
+ TB0CTL &= ~TBIFG; // Clear Overflow Interrupt flag
+}
+
+#pragma vector = TIMER0_B0_VECTOR           //triggers every 10ms
+__interrupt void Timer0_B0_ISR(void){
+    Time_Sequence++;
+    display_update_count++;
+    second_count++;
+    zero_count++;
+    adc_count++;
+
+    if(display_update_count >= 20){          //display updates every 20 counts or 200ms
+        update_display = 1;
+        display_update_count = 0;
+        }
+    if (second_count >= 100){               //every 100 counts of 10ms (1sec) one_second increments
+        one_second = 1;
+        second_count = 0;
+        }
+    if (zero_count >= 10){         //every 10 counts of 10ms or 100ms (0.1sec)
+        zero_point_one = 1;
+        zero_count = 0;
+    }
+    if (adc_count >= 5){
+        adc_count = 0;
+        ADCCTL0 |= ADCENC;              // Enable Conversions
+        ADCCTL0 |= ADCSC;               // Start next sample every 50ms
+    }
+    TB0CCR0 += TB0CCR0_INTERVAL;    //adds the interval so that
+    TB0CCTL0 &= ~CCIFG;             //clear the interrupt flag so this interrupt continues to trigger
+}
+
+//switch de-bounce interrupt
+#pragma vector=TIMER0_B1_VECTOR
+__interrupt void TIMER0_B1_ISR(void){
+
+ switch(__even_in_range(TB0IV,14)){
+     case 0:
+         break;
+     case 2:
+         TB0CCTL1 &= ~CCIE;
+         P4IFG &= ~SW1;
+         P4IE |= SW1;
+         TB0CCR1 += TB0CCR1_INTERVAL;   //debounce time for switch 1
+         mode_flag = 1;
+         TB0CCTL1 &= ~CCIFG;
+         break;
+     case 4:
+         TB0CCTL2 &= ~CCIE;
+         P2IFG &= ~SW2;
+         P2IE |= SW2;
+         TB0CCR2 += TB0CCR2_INTERVAL;   //debounce time for switch 2
+         TB0CCTL2 &= ~CCIFG;
+         break;
+     case 14: break;
+     default: break;
+ }
+}
+
+
+

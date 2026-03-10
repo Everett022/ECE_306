@@ -14,11 +14,7 @@
 #include  "LCD.h"
 #include  "ports.h"
 #include  "macros.h"
-
-//Global Variables
-extern volatile unsigned int Time_Sequence;
-extern volatile char one_time;
-extern volatile unsigned char display_changed;
+#include  "globals.h"
 
 
 void Init_LEDs(void){

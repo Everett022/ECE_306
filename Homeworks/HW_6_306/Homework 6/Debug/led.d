@@ -11,6 +11,7 @@ led.obj: ../functions.h
 led.obj: ../LCD.h
 led.obj: ../ports.h
 led.obj: ../macros.h
+led.obj: ../globals.h
 
 ../led.c:
 
@@ -33,4 +34,6 @@ led.obj: ../macros.h
 ../ports.h:
 
 ../macros.h:
+
+../globals.h:
 

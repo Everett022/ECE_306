@@ -7,7 +7,9 @@ CMD_SRCS += \
 ../lnk_msp430fr2355.cmd 
 
 C_SRCS += \
+../adc.c \
 ../clocks.c \
+../detect.c \
 ../display.c \
 ../init.c \
 ../led.c \
@@ -21,7 +23,9 @@ C_SRCS += \
 ../timerb0.c 
 
 C_DEPS += \
+./adc.d \
 ./clocks.d \
+./detect.d \
 ./display.d \
 ./init.d \
 ./led.d \
@@ -35,7 +39,9 @@ C_DEPS += \
 ./timerb0.d 
 
 OBJS += \
+./adc.obj \
 ./clocks.obj \
+./detect.obj \
 ./display.obj \
 ./init.obj \
 ./led.obj \
@@ -49,7 +55,9 @@ OBJS += \
 ./timerb0.obj 
 
 OBJS__QUOTED += \
+"adc.obj" \
 "clocks.obj" \
+"detect.obj" \
 "display.obj" \
 "init.obj" \
 "led.obj" \
@@ -63,7 +71,9 @@ OBJS__QUOTED += \
 "timerb0.obj" 
 
 C_DEPS__QUOTED += \
+"adc.d" \
 "clocks.d" \
+"detect.d" \
 "display.d" \
 "init.d" \
 "led.d" \
@@ -77,7 +87,9 @@ C_DEPS__QUOTED += \
 "timerb0.d" 
 
 C_SRCS__QUOTED += \
+"../adc.c" \
 "../clocks.c" \
+"../detect.c" \
 "../display.c" \
 "../init.c" \
 "../led.c" \
