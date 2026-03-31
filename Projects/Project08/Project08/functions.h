@@ -178,5 +178,7 @@ void project_7(void);
 //Serial communication
 void Init_Serial_UCA0(int speed);
 void serial_update(void);
+void rx_process_usb(void);
+void rx_process_iot(void);
 
 

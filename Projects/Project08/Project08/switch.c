@@ -15,6 +15,10 @@
 #include  "globals.h"
 #include  "macros.h"
 
+//Char arrays
+char switch_speed_1[] = " 115,200  ";
+char switch_speed_2[] = " 460,800  ";
+
 unsigned char okay_to_look_at_switch1;
 unsigned char sw1_position;
 unsigned int count_debounce_SW1;
@@ -37,8 +41,6 @@ unsigned int white_value_R = 0;
 unsigned int white_value_L = 0;
 
 int speed_flag = 0;
-
-int presses = 0;
 
 /* This used to be used for de-bounce back in project 4
 //Switch 1 is used for changing shape mode
@@ -89,14 +91,7 @@ void Switch2_Process(void){
 void Switch_mode(void){
     if(switch_1_count){
         switch_1_count = 0;
-
-        UCA0BRW = 4;
-        UCA0MCTLW = 0x5551;
-        set_baud = 4;       //changes to 115200
-        line_detection_flag = 1;
-        serial_flag = 1;
-        serial_part = 0;
-        speed_flag = 0;
+        serial_state = IOT_TRANSMIT;
     }
 }
 
@@ -104,13 +99,32 @@ void Switch_mode_2(void){
     if(switch_2_count){
         switch_2_count = 0;
         number_of_presses_2++;
-        line_detection_flag = 1;
-        UCA0BRW = 17;
-        UCA0MCTLW = 0x4A00;
-        set_baud = 17;
-        serial_flag = 1;
-        serial_part = 0;
-        speed_flag = 1;
+
+        switch(number_of_presses_2){
+        case 1:
+            UCA0BRW = 4;
+            UCA0MCTLW = 0x5551;
+            UCA1BRW = 4;
+            UCA1MCTLW = 0x5551;
+            speed_flag = 0;
+            strcpy(display_line[2], switch_speed_1);
+            display_changed = 1;
+            Display_Process();
+        break;
+        case 2:
+            number_of_presses_2 = 0;
+            UCA0BRW = 17;
+            UCA0MCTLW = 0x4A00;
+            UCA1BRW = 17;
+            UCA1MCTLW = 0x4A00;
+            speed_flag = 1;
+            strcpy(display_line[2], switch_speed_2);
+            display_changed = 1;
+            Display_Process();
+        break;
+        default:break;
+        }
+
     }
 }
 

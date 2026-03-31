@@ -141,9 +141,11 @@
 #define BEGINNING     (0)
 
 #define STARTUP       (0x01)
-#define TRANSMIT      (0x02)
-#define DISPLAY       (0x03)
-#define TEST          (0x04)
-#define FINAL         (0x05)
+#define IOT_TRANSMIT  (0x02)
+#define USB_TRANSMIT  (0x03)
+#define RECEIVE       (0x04)
+#define NEXT_RECEIVE  (0x05)
+#define NEXT_TRANSMIT (0x06)
+
 
 #endif /* MACROS_H_ */

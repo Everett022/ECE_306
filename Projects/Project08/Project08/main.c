@@ -38,8 +38,6 @@ void main(void){
   Init_DAC();                          // Initialize DAC to (4 V)
   Init_Serial_UCA0(set_baud);          // Initialize serial com
 
-
-
 //------------------------------------------------------------------------------
 // While Loop that runs as long as the car is on.
 //------------------------------------------------------------------------------
@@ -50,18 +48,9 @@ void main(void){
     Switch_mode_2();                   //Switch 2 mode call
     //detect();                          //Constantly detects ADC hex values and converts BCD values to the screen
     //black_flag();                      //Throws up a black flag to detect line intersection
+    rx_process_usb();
+    serial_update();
 
-      display_changed = 1;
-      Display_Process();
-
-    if(line_detection_flag){
-        serial_update();
-    }else{
-        strcpy(display_line[0], "   NCSU   ");
-        strcpy(display_line[1], " WOLFPACK ");
-        strcpy(display_line[2], "  ECE306  ");
-        strcpy(display_line[3], "  GP I/O  ");
-    }
 
     if(Last_Time_Sequence != Time_Sequence){
         Last_Time_Sequence = Time_Sequence;
