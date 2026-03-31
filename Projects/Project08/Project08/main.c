@@ -43,7 +43,6 @@ void main(void){
 //------------------------------------------------------------------------------
 
   while(ALWAYS) {
-    Switches_Process();                //Check for switch state change
     Switch_mode();                     //Switch 1 mode call
     Switch_mode_2();                   //Switch 2 mode call
     Display_Process();

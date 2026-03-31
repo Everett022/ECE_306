@@ -109,7 +109,6 @@ void Switch_mode_2(void){
             speed_flag = 0;
             strcpy(display_line[2], switch_speed_1);
             display_changed = 1;
-            Display_Process();
         break;
         case 2:
             number_of_presses_2 = 0;
@@ -120,7 +119,6 @@ void Switch_mode_2(void){
             speed_flag = 1;
             strcpy(display_line[2], switch_speed_2);
             display_changed = 1;
-            Display_Process();
         break;
         default:break;
         }

@@ -22,7 +22,6 @@ int serial_part = 0;
 int receive_flag_0 = 0;
 int receive_flag_1 = 0;
 
-unsigned int serial_flag = 0;
 unsigned int serial_state = STARTUP;
 
 //MSP430 stores
@@ -208,15 +207,21 @@ void serial_update(void){
         strcpy(display_line[2], speed_type);
         strcpy(display_line[3], "          ");
         display_changed = 1;
+        serial_state = IDLE;
         break;
     case NEXT_RECEIVE:
         if(receive_flag_1){
+            receive_flag_1 = 0;
             serial_state = RECEIVE;
+            break;
         }
         break;
     case IDLE:
-
-        //strcpy(iot_TX_buf, display_rx_message);
+        receive_flag_0 = 0;
+        receive_flag_1 = 0;
+        temp_index_usb = 0;
+        temp_index_iot = 0;
+        serial_state = NEXT_RECEIVE;
         break;
     default:break;
     }
@@ -239,7 +244,6 @@ void rx_process_usb(void){
                usb_rx_rd = BEGINNING;
            }
     }
-
 }
 
 void rx_process_iot(void){
