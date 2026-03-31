@@ -146,6 +146,8 @@
 #define RECEIVE       (0x04)
 #define NEXT_RECEIVE  (0x05)
 #define NEXT_TRANSMIT (0x06)
+#define IDLE          (0x07)
+#define IOT_STARTUP   (0x08)
 
 
 #endif /* MACROS_H_ */

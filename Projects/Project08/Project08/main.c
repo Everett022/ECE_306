@@ -46,9 +46,11 @@ void main(void){
     Switches_Process();                //Check for switch state change
     Switch_mode();                     //Switch 1 mode call
     Switch_mode_2();                   //Switch 2 mode call
+    Display_Process();
     //detect();                          //Constantly detects ADC hex values and converts BCD values to the screen
     //black_flag();                      //Throws up a black flag to detect line intersection
     rx_process_usb();
+    rx_process_iot();
     serial_update();
 
 

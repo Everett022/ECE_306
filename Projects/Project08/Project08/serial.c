@@ -21,7 +21,6 @@ int serial_part = 0;
 
 int receive_flag_0 = 0;
 int receive_flag_1 = 0;
-int rx_process_flag = 1;
 
 unsigned int serial_flag = 0;
 unsigned int serial_state = STARTUP;
@@ -50,6 +49,7 @@ volatile unsigned int iot_rx_rd = 0;
 volatile unsigned int iot_tx = 0;
 volatile unsigned int usb_tx = 0;
 unsigned int temp_index_usb = 0;
+unsigned int temp_index_iot = 0;
 
 int j = 0;
 int i = 0;
@@ -93,11 +93,10 @@ void Init_Serial_UCA0(int speed){
     UCA1MCTLW = 0x5551 ; //variable that is change by the switch in order to fine tune the output
 
     UCA0CTLW0 &= ~UCSWRST ; // release from reset
-    UCA0TXBUF = 0x00; // Prime the Pump
-    UCA0IE |= UCRXIE; // Enable RX interrupt
+
+    UCA0IE |= UCRXIE;
 
     UCA1CTLW0 &= ~UCSWRST;
-    UCA1TXBUF = 0x00;
     UCA1IE |= UCRXIE;
     //------------------------------------------------------------------------------
 }
@@ -147,20 +146,16 @@ __interrupt void eUSCI_A0_ISR(void){ //This interrupt is the interrupt relating 
          if(iot_rx_wr >= sizeof(IOT_Ring_Rx)){
              iot_rx_wr = BEGINNING;
          }
-         if(iot_receive == '\n'){
-             receive_flag_0 = 1;
-             iot_rx_wr = 0;
-             UCA0IE &= ~UCRXIE;
-         }
-         UCA1TXBUF = iot_receive;
+         //UCA1TXBUF = iot_receive;
      break;
      case 4: // Vector 4 – Tx0IFG
          UCA0TXBUF = iot_TX_buf[iot_tx];
-         iot_TX_buf[iot_tx++] = 0;
+
          if(iot_TX_buf[iot_tx] == 0x00){
-             UCA0IE &= ~UCTXIE;
              iot_tx = 0;
+             UCA0IE &= ~UCTXIE;
          }
+         iot_TX_buf[iot_tx++] = 0;
      break;
      default: break;
  }
@@ -186,69 +181,42 @@ void serial_update(void){
         strcpy(display_line[2], speed_type);
         strcpy(display_line[3], "          ");
         display_changed = 1;
-        Display_Process();
         break;
     case RECEIVE:
-        /*if(receive_flag_1){
-            receive_flag_1 = 0;
-            for(i = 0; i<32; i++){
-               if(USB_Ring_Rx[i] == '\r') continue;
-               display_rx_message[j++] = USB_Ring_Rx[i];
-               USB_Ring_Rx[i] = '\0';
-            }*/
-            //display_rx_message[j] = '\0';
-
-            strcpy(display_line[0], " RECEIVED ");
-            strcpy(display_line[1], "          ");
-            strcpy(display_line[2], speed_type);
-            strcpy(display_line[3], display_rx_message);
-            display_changed = 1;
-            Display_Process();
-            serial_state = NEXT_RECEIVE;
-        //}
+        strcpy(display_line[0], " RECEIVED ");
+        strcpy(display_line[1], "          ");
+        strcpy(display_line[2], speed_type);
+        strcpy(display_line[3], display_rx_message);
+        display_changed = 1;
+        strcpy(iot_TX_buf, display_rx_message);
+        break;
+    case IOT_STARTUP:
+        iot_tx = 0;
+        UCA0IE |= UCTXIE;
+        serial_state = IOT_TRANSMIT;
         break;
     case IOT_TRANSMIT:
-        strcpy(iot_TX_buf, display_rx_message);
-        UCA0IE |= UCTXIE;
-        serial_state = USB_TRANSMIT;
+        if(receive_flag_0){
+            serial_state = USB_TRANSMIT;
+            strcpy(usb_TX_buf, display_tx_message);
+            UCA1IE |= UCTXIE;
+        }
         break;
     case USB_TRANSMIT:
-        UCA0IE |= UCRXIE;
-        for(i = 0; i<32; i++){
-            if(IOT_Ring_Rx[i] == '\r') continue;
-            display_tx_message[j++] = IOT_Ring_Rx[i];
-            IOT_Ring_Rx[i] = '\0';
-        }
-        //display_tx_message[j] = '\0';
-        /*for (i = 0; i < 32; i++){
-            if (IOT_Ring_Rx[i] == '\r' || USB_Ring_Rx[i] == '\n')
-            {
-                IOT_Ring_Rx[i] = '\0';
-                continue;
-            }
-            if (IOT_Ring_Rx[i] == '\0')
-                continue;
-            display_tx_message[j++] = IOT_Ring_Rx[i];
-            IOT_Ring_Rx[i] = '\0';
-        }*/
-
         strcpy(display_line[0], " TRANSMIT ");
         strcpy(display_line[1], display_tx_message);
         strcpy(display_line[2], speed_type);
         strcpy(display_line[3], "          ");
         display_changed = 1;
-        Display_Process();
-
-        strcpy(usb_TX_buf, display_tx_message);
-        UCA1IE |= UCTXIE;
-
-        serial_state = NEXT_RECEIVE;
-
         break;
     case NEXT_RECEIVE:
         if(receive_flag_1){
             serial_state = RECEIVE;
         }
+        break;
+    case IDLE:
+
+        //strcpy(iot_TX_buf, display_rx_message);
         break;
     default:break;
     }
@@ -261,15 +229,34 @@ void rx_process_usb(void){
     if(temp_usb_wr != usb_rx_rd){
         if(USB_Ring_Rx[usb_rx_rd] == '\r' || USB_Ring_Rx[usb_rx_rd] == '\n'){
             receive_flag_1 = 1;
-            rx_process_flag = 0;
             display_rx_message[temp_index_usb++] = '\0';
-            UCA1IE &= ~UCRXIE;
+            //UCA1IE &= ~UCRXIE;
             usb_rx_rd++;
             return;
         }
         display_rx_message[temp_index_usb++] = USB_Ring_Rx[usb_rx_rd++];
         if(usb_rx_rd >= sizeof(USB_Ring_Rx)){
                usb_rx_rd = BEGINNING;
+           }
+    }
+
+}
+
+void rx_process_iot(void){
+    unsigned int temp_iot_wr;
+    temp_iot_wr = iot_rx_wr;
+
+    if(temp_iot_wr != iot_rx_rd){
+        if(IOT_Ring_Rx[iot_rx_rd] == '\0'){
+            receive_flag_0 = 1;
+            display_tx_message[temp_index_iot++] = '\0';
+            //UCA0IE &= ~UCRXIE;
+            iot_rx_rd++;
+            return;
+        }
+        display_tx_message[temp_index_iot++] = IOT_Ring_Rx[iot_rx_rd++];
+        if(iot_rx_rd >= sizeof(IOT_Ring_Rx)){
+               iot_rx_rd = BEGINNING;
            }
     }
 

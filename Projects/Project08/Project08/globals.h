@@ -67,7 +67,6 @@ extern unsigned int white_value_L;
 extern unsigned int set_baud;
 extern unsigned int tuning;
 extern int speed_flag;
-extern int rx_process_flag;
 extern unsigned int serial_state;
 
 extern volatile unsigned int iot_rx_wr;

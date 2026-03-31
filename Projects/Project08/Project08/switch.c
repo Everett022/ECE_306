@@ -91,7 +91,7 @@ void Switch2_Process(void){
 void Switch_mode(void){
     if(switch_1_count){
         switch_1_count = 0;
-        serial_state = IOT_TRANSMIT;
+        serial_state = IOT_STARTUP;
     }
 }
 
