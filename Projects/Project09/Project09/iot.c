@@ -18,11 +18,49 @@ unsigned int iot_state = 0;
 unsigned int iot_status = IDLE;
 unsigned int iot_startup_timer = 0;
 unsigned int configured_flag = 0;
+char iot_input;
+int command_1 = 0;
+int command_2 = 0;
+unsigned int run_time = 0;
+unsigned int run_time3 = 0;
+unsigned int run_time2 = 0;
+unsigned int run_time1 = 0;
+unsigned int run_time0 = 0;
+
+unsigned int command_counter = 0;
 
 unsigned int advance_0 = 0;
 unsigned int advance_1 = 0;
 unsigned int advance_2 = 0;
 unsigned int advance_3 = 0;
+
+static void reset_unlock_sequence(void){
+    advance_0 = 0;
+    advance_1 = 0;
+    advance_2 = 0;
+    advance_3 = 0;
+}
+
+static void reset_command_values(void){
+    command_flag = 0;
+    iot_state = IDLE;
+    command_1 = 0;
+    command_2 = 0;
+    run_time = 0;
+    run_time3 = 0;
+    run_time2 = 0;
+    run_time1 = 0;
+    run_time0 = 0;
+    command_counter = 0;
+}
+
+static void update_run_time(char iot_value){
+    run_time3 = run_time2;
+    run_time2 = run_time1;
+    run_time1 = run_time0;
+    run_time0 = (unsigned int)(iot_value - '0');
+    run_time = (run_time3 * 1000) + (run_time2 * 100) + (run_time1 * 10) + run_time0;
+}
 
 void IOT_State(void){
     switch(iot_status){
@@ -73,7 +111,7 @@ void IOT_State(void){
             initial_process_iot();
             if(ok_received){
                 ok_received = 0;
-                strcpy(iot_TX_buf, "AT+CIPSERVER=1,8080\r\n");
+                strcpy(iot_TX_buf, "AT+CIPSERVER=1,1932\r\n");
                 iot_tx = 0;
                 UCA0IE |= UCTXIE;
                 iot_status = IOT_READY;
@@ -171,70 +209,169 @@ void IOT_State(void){
 }
 
 void IOT_Process(void){
-    iot_state = display_iot_rx_message[input_rd++];
-
-    if (input_rd >= sizeof(display_iot_rx_message)){
-        input_rd = BEGINNING;
-    }
-
-    if (command_flag){
+    if (command_flag && (iot_state != RECEIVE)){
         switch (iot_state){
             case '^':
                 uca1_flag = 1;
                 strcpy(repeat, " I'm here bbg \n\0");
+                no_movement();
+                reset_command_values();
                 break;
             case 'F':
-                uca1_flag = 1;
-                UCA0BRW = 4;
-                UCA0MCTLW = 0x5551;
-                UCA1BRW = 4;
-                UCA1MCTLW = 0x5551;
-
-                strcpy(display_line[0], "   BAUD   ");
-                strcpy(display_line[1], "          ");
-                strcpy(display_line[2], speed_1);
-                strcpy(display_line[3], "          ");
+                strcpy(display_line[0], "Forward   ");
                 display_changed = 1;
+                medium_forward();
+                if(one_second){
+                    one_second = 0;
+                    command_counter++;
+                }
+
+                if(command_counter >= run_time){
+                    no_movement();
+                    command_counter = 0;
+                    if(command_2){
+                        iot_state = command_2;
+                        command_2 = 0;
+                    }else{
+                        reset_command_values();
+                    }
+                }
                 break;
-            case 'S':
-                uca1_flag = 1;
-                UCA0BRW = 52;
-                UCA0MCTLW = 0x4911;
-                UCA1BRW = 52;
-                UCA1MCTLW = 0x4911;
-
-                strcpy(repeat, " turtle mode ON! \n\0");
-                strcpy(display_line[0], "   BAUD   ");
-                strcpy(display_line[2], speed_3);
+            case 'B':
+                strcpy(display_line[0], "Backwards ");
                 display_changed = 1;
+                medium_reverse();
+                if(one_second){
+                    one_second = 0;
+                    command_counter++;
+                }
+
+                if(command_counter >= run_time){
+                    no_movement();
+                    command_counter = 0;
+                    if(command_2){
+                        iot_state = command_2;
+                        command_2 = 0;
+                    }else{
+                        reset_command_values();
+                    }
+                }
+                break;
+            case 'L':
+                strcpy(display_line[0], "Left      ");
+                display_changed = 1;
+                medium_left();
+                if(zero_point_one){
+                    zero_point_one = 0;
+                    command_counter++;
+                }
+
+                if(command_counter >= run_time){
+                    no_movement();
+                    command_counter = 0;
+                    if(command_2){
+                        iot_state = command_2;
+                        command_2 = 0;
+                    }else{
+                        reset_command_values();
+                    }
+                }
+                break;
+            case 'R':
+                strcpy(display_line[0], "Right     ");
+                display_changed = 1;
+                medium_right();
+                if(one_second){
+                    one_second = 0;
+                    command_counter++;
+                }
+
+                if(command_counter >= run_time){
+                    no_movement();
+                    command_counter = 0;
+                    if(command_2){
+                        iot_state = command_2;
+                        command_2 = 0;
+                    }else{
+                        reset_command_values();
+                    }
+                }
                 break;
             default:
+                no_movement();
+                reset_command_values();
                 break;
         }
+        return;
     }
-    else
-    {
-        if (iot_state == '^'){
-            advance_0 = 1;
-            return;
-        }if (iot_state == '0' && advance_0){
-            advance_1 = 1;
-            return;
-        }if (iot_state == '8' && advance_1){
-            advance_2 = 1;
-            return;
-        }if (iot_state == '6' && advance_2){
-            advance_3 = 1;
-            return;
-        }if (iot_state == '4' && advance_3){
-            command_flag = 1;
-            return;
+
+    if(!receive_flag_0){
+        return;
+    }
+
+    input_rd = BEGINNING;
+
+    while((iot_input = display_iot_rx_message[input_rd++]) != '\0'){
+        if(command_flag && (iot_state == RECEIVE)){
+            if((iot_input == 'F') || (iot_input == 'B') || (iot_input == 'L') || (iot_input == 'R') || (iot_input == '^')){
+                if(!command_1){
+                    command_1 = iot_input;
+                }
+                else if(!command_2){
+                    command_2 = iot_input;
+                }
+            }
+            else if((iot_input >= '0') && (iot_input <= '9')){
+                update_run_time(iot_input);
+            }
+            continue;
         }
-        command_flag = 0;
-        advance_0 = 0;
-        advance_1 = 0;
-        advance_2 = 0;
-        advance_3 = 0;
+
+        if (iot_input == '^'){
+            reset_unlock_sequence();
+            advance_0 = 1;
+            continue;
+        }
+        if (iot_input == '0' && advance_0){
+            advance_1 = 1;
+            continue;
+        }
+        if (iot_input == '8' && advance_1){
+            advance_2 = 1;
+            continue;
+        }
+        if (iot_input == '6' && advance_2){
+            advance_3 = 1;
+            continue;
+        }
+        if (iot_input == '4' && advance_3){
+            command_flag = 1;
+            iot_state = RECEIVE;
+            command_counter = 0;
+            command_1 = 0;
+            command_2 = 0;
+            run_time = 0;
+            run_time3 = 0;
+            run_time2 = 0;
+            run_time1 = 0;
+            run_time0 = 0;
+            continue;
+        }
+        reset_unlock_sequence();
+    }
+
+    receive_flag_0 = 0;
+    temp_index_iot = 0;
+    input_rd = BEGINNING;
+    display_iot_rx_message[BEGINNING] = '\0';
+    reset_unlock_sequence();
+
+    if(command_flag && (iot_state == RECEIVE) && command_1){
+        if((command_1 != '^') && (run_time == 0)){
+            run_time = 1;
+        }
+        iot_state = command_1;
+    }else if(command_flag && (iot_state == RECEIVE)){
+        reset_command_values();
     }
 }
-

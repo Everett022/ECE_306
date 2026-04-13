@@ -83,6 +83,7 @@ extern unsigned int ssid_string_flag;
 
 extern unsigned int serial_state;
 extern unsigned int uca1_flag;
+extern int receive_flag_0;
 extern char display_rx_message[32];
 extern char display_tx_message[32];
 
@@ -113,7 +114,6 @@ extern unsigned int number_of_presses;
 extern unsigned int number_of_presses_2;
 
 #endif /* GLOBALS_H_ */
-
 
 
 

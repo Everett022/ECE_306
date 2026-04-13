@@ -156,6 +156,7 @@
 #define IOT_DISPLAY   (0x0E)
 #define SSID          (0x0F)
 #define IP_ADDY       (0x10)
+#define PARSE_TIME    (0x11)
 
 
 #endif /* MACROS_H_ */
