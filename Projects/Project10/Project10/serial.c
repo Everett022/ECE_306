@@ -13,17 +13,11 @@
 #include  "macros.h"
 
 //Char arrays
-char speed_1[] = " 115,200  ";
-char speed_2[] = " 460,800  ";
-char speed_3[] = "  9,600   ";
 char repeat[32] = " testing \n";
 
 // Serial Flags
-int serial_part = 0;
 int receive_flag_0 = 0;
-int receive_flag_1 = 0;
 unsigned int uca1_flag = 0;
-unsigned int serial_state = STARTUP;
 
 unsigned int ok_received = 0;
 unsigned int wifi_connected = 0;
@@ -46,9 +40,6 @@ volatile unsigned int iot_tx = 0;
 volatile unsigned int usb_tx = 0;
 volatile unsigned int temp_index_usb = 0;
 volatile unsigned int temp_index_iot = 0;
-
-int j = 0;
-int i = 0;
 
 void Init_Serial_UCA0(int speed){
 //------------------------------------------------------------------------------
@@ -160,84 +151,6 @@ __interrupt void eUSCI_A0_ISR(void){
     }
 }
 
-void serial_update(void){
-    if (speed_flag){
-        strcpy(speed_type, speed_2);
-    }
-    else{
-        strcpy(speed_type, speed_1);
-    }
-
-    switch (serial_state){
-        case STARTUP:
-            UCA1IE |= UCRXIE;
-            if (receive_flag_1){
-                receive_flag_1 = 0;
-                serial_state = RECEIVE;
-                break;
-            }
-            break;
-        case RECEIVE:
-            strcpy(iot_TX_buf, display_usb_rx_message);
-            serial_state = IOT_STARTUP;
-            break;
-        case IOT_STARTUP:
-            iot_tx = 0;
-            UCA0IE |= UCTXIE;
-            serial_state = IOT_TRANSMIT;
-            break;
-        case IOT_TRANSMIT:
-            if (receive_flag_0){
-                serial_state = USB_TRANSMIT;
-                strcpy(usb_TX_buf, display_iot_rx_message);
-                UCA1IE |= UCTXIE;
-            }
-            break;
-        case USB_TRANSMIT:
-            strcpy(display_line[0], " TRANSMIT ");
-            strcpy(display_line[1], display_iot_rx_message);
-            strcpy(display_line[2], speed_type);
-            strcpy(display_line[3], "          ");
-            display_changed = 1;
-            serial_state = IDLE;
-            break;
-        case NEXT_RECEIVE:
-            if (receive_flag_1){
-                receive_flag_1 = 0;
-                serial_state = RECEIVE;
-                break;
-            }
-            break;
-        case IDLE:
-            receive_flag_0 = 0;
-            receive_flag_1 = 0;
-            temp_index_usb = 0;
-            temp_index_iot = 0;
-            serial_state = NEXT_RECEIVE;
-            break;
-        default:
-            break;
-        }
-}
-
-void rx_process_usb(void){
-    unsigned int temp_usb_wr;
-    temp_usb_wr = usb_rx_wr;
-
-    if(temp_usb_wr != usb_rx_rd){
-        if(USB_Ring_Rx[usb_rx_rd] == '\r' || USB_Ring_Rx[usb_rx_rd] == '\n'){
-            receive_flag_1 = 1;
-            display_usb_rx_message[temp_index_usb++] = '\0';
-            usb_rx_rd++;
-            return;
-        }
-        display_usb_rx_message[temp_index_usb++] = USB_Ring_Rx[usb_rx_rd++];
-        if(usb_rx_rd >= sizeof(USB_Ring_Rx)){
-               usb_rx_rd = BEGINNING;
-           }
-    }
-}
-
 void rx_process_iot(void){
     unsigned int temp_iot_wr;
     temp_iot_wr = iot_rx_wr;
@@ -329,5 +242,4 @@ void initial_process_iot(void){
     }
 
 }
-
 

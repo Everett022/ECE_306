@@ -1,1 +1,8 @@
 /.metadata/
+.DS_Store
+Project10/Debug/*.d
+Project10/Debug/*.d_raw
+Project10/Debug/*.map
+Project10/Debug/*.out
+Project10/Debug/*_linkInfo.xml
+Project10/Debug/*.obj

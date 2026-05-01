@@ -174,8 +174,22 @@ void lucid_right(void){
 }
 //------------------------------------------
 
+//------------------------------------------
+//   goldy speeds for p10 forwards, backwards, left and right
+//------------------------------------------
+void goldy_left(void){
+    left_safety();
+    right_safety();
+    RIGHT_FORWARD_SPEED = GOLDY;
+    LEFT_REVERSE_SPEED = GOLDY;
+}
 
-
+void goldy_right(void){
+    left_safety();
+    right_safety();
+    LEFT_FORWARD_SPEED = GOLDY;
+    RIGHT_REVERSE_SPEED = GOLDY;
+}
 
 
 

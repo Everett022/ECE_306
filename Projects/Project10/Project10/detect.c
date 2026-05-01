@@ -12,32 +12,30 @@
 #include  "globals.h"
 #include  "macros.h"
 
+//BCD Conversion variables
 char thousands = '0';
 char hundreds = '0';
 char tens = '0';
 char ones = '0';
 
 int delay_amount = 0;
-int white_amount = 0;
-int divert_amount = 0;
 int small_delay_amount = 0;
 int circle_time = 0;
-int center_time = 0;
-int forward_time = 0;
 
 unsigned int intersect_flag = 0;
 unsigned int full_turn_flag = 0;
 unsigned int left_turn_flag = 0;
+unsigned int last_dir = 1;
 
 unsigned int segment = WAIT_CASE;
 unsigned int saved_case = FIND_LINE;
 
 volatile int left_forward = SLOW;
 volatile int right_forward = SLOW;
-volatile int left_reverse = WHEEL_OFF;
-volatile int right_reverse = WHEEL_OFF;
 
+//PID Control Variables
 int prev_error = 0;
+int p_error = 0;
 int i_error = 0;
 
 //Code that takes in hex values for IR detectors and converts to BCD
@@ -66,48 +64,54 @@ void BCD_Convert(unsigned int value_passed){
     }
 }
 
+//Display the IR ADC readings for the initial check
 void detect(void){
-    if(condition){          // Can be activated by changing the condition in switch press to turn on or off the IR LED
-        display_changed = 1;
-    }else{
-        display_changed = 1;
-    }
-
     if(left_flag){
         left_flag = 0;
         BCD_Convert (ADC_Left_Detect);
-        sprintf(display_line[2], "L: %c%c%c%c   ",thousands, hundreds, tens, ones);
+        display_line[3][0] = 'L';
+        display_line[3][1] = thousands;
+        display_line[3][2] = hundreds;
+        display_line[3][3] = tens;
+        display_line[3][4] = ones;
         display_changed = 1;
     }
     if(right_flag){
         right_flag = 0;
         BCD_Convert (ADC_Right_Detect);
-        sprintf(display_line[3], "R: %c%c%c%c   ",thousands, hundreds, tens, ones);
+        display_line[3][5] = 'R';
+        display_line[3][6] = thousands;
+        display_line[3][7] = hundreds;
+        display_line[3][8] = tens;
+        display_line[3][9] = ones;
         display_changed = 1;
     }
-    if(thumb_flag){
-        thumb_flag = 0;
-        BCD_Convert (ADC_Thumb);
-        sprintf(display_line[1], "T: %c%c%c%c   ",thousands, hundreds, tens, ones);
-        display_changed = 1;
-    }
-    Display_Process();
 }
 
+//Seek and navigate black line command
 void black_line(void){
-    const double Kp = 32.4;
-    const double Kd = 24.3;
+    const double Kp = 183.3;
+    const double Kd = 102.3;
     const double Ki = 0.02;
 
     switch(segment){
         case WAIT_CASE:
             if(one_second){
+                no_movement();
                 one_second = 0;
                 delay_amount++;
-                if(delay_amount >= 11){
-                    strcpy(display_line[0], " BL  START ");
+                if(delay_amount >= 3){
                     segment = saved_case;
-                    forward_time = 0;
+                    delay_amount = 0;
+                }
+            }
+            break;
+        case DISPLAY_CHECK:
+            if(one_second){
+                one_second = 0;
+                delay_amount++;
+                if(delay_amount >= 7){
+                    segment = saved_case;
                     delay_amount = 0;
                 }
             }
@@ -116,7 +120,7 @@ void black_line(void){
             if(zero_point_one){
                 zero_point_one = 0;
                 small_delay_amount++;
-                if(small_delay_amount >= 2){
+                if(small_delay_amount >= 8){
                     no_movement();
                     segment = WAIT_CASE;
                     small_delay_amount = 0;
@@ -124,43 +128,31 @@ void black_line(void){
             }
             break;
         case FIND_LINE:
-            if(one_second){
-               one_second = 0;
-               if(forward_time <= 3){
-                   fast_forward();
-               }
-               if(forward_time >= 4){
-                   project_10_arc();
-               }
-               if(forward_time >= 12){
-                   no_movement();
-               }
-               if(forward_time >= 22){
-                   medium_forward();
-                   if(intersect_flag){
-                     no_movement();
-                     forward_time = 0;
-                     saved_case = TURN_TO_LINE;
-                     segment = OVERSHOOT;
-                 }
-               }
-               forward_time++;
-            }
+              slow_forward();
+              if(intersect_flag){
+                segment = OVERSHOOT;
+                saved_case = TURN_TO_LINE;
+                strcpy(display_line[0], "INTERCEPT ");
+                display_changed = 1;
+              }
             break;
         case TURN_TO_LINE:
             slow_right();
+            strcpy(display_line[0], "BL TURN   ");
+            display_changed = 1;
             if(left_turn_flag){
                 no_movement();
                 slow_left();
                 if(full_turn_flag){
                     no_movement();
-                    segment = NAV_LINE;
+                    segment = DISPLAY_CHECK;
+                    saved_case = NAV_LINE;
                 }
             }
             if(full_turn_flag){
                 no_movement();
                 saved_case = NAV_LINE;
-                segment = WAIT_CASE;
+                segment = DISPLAY_CHECK;
             }
             break;
         case NAV_LINE:
@@ -168,20 +160,33 @@ void black_line(void){
                 circle_time++;
                 speed_update = 0;
                 int min_speed = 5000;
+                strcpy(display_line[0], "BL CIRCLE  ");
+                display_changed = 1;
+
 
                 int p_error = ADC_Right_Detect - ADC_Left_Detect;
+                int d_error = p_error - prev_error;
+                prev_error = p_error;
+
                 i_error += p_error;
                 if(i_error > 1000) i_error = 1000;
                 if(i_error < -1000) i_error = -1000;
 
-                int d_error = p_error - prev_error;
-                int correction = (int)((Kp*p_error + Kd*d_error + Ki*i_error)*(1.2*MEDIUM/SLOW));
 
-                if(correction > 5000) correction = 5000;
-                if(correction < -5000) correction = -5000;
 
-                right_forward = MEDIUM - correction;
-                left_forward = MEDIUM + correction;
+                int correction = (int)((Kp*p_error + Kd*d_error + Ki*i_error)*(1.2*GOLDY/SLOW));
+
+                if(correction > 15000) correction = 15000;
+                if(correction < -15000) correction = -15000;
+
+                right_forward = GOLDY - correction;
+                left_forward = GOLDY + correction;
+
+                if(right_forward > left_forward){
+                    last_dir = 0;
+                }else{
+                    last_dir = 1;
+                }
 
                 if(right_forward > WHEEL_PERIOD) right_forward = LUCID;
                 if(left_forward > WHEEL_PERIOD) left_forward = LUCID;
@@ -189,38 +194,19 @@ void black_line(void){
                 if(right_forward < min_speed) right_forward = min_speed;
                 if(left_forward < min_speed) left_forward = min_speed;
 
-                RIGHT_FORWARD_SPEED = right_forward;
-                LEFT_FORWARD_SPEED = left_forward;
-                if(circle_time == 3000){
+                if((ADC_Right_Detect < white_value_R) && (ADC_Left_Detect < white_value_L)){
                     no_movement();
-                    saved_case = TURN_CENTER;
-                    segment = WAIT_CASE;
+                    if(last_dir){
+                        goldy_left();
+                    }else{
+                        goldy_right();
+                    }
+                }
+                else {
+                    RIGHT_FORWARD_SPEED = right_forward;
+                    LEFT_FORWARD_SPEED  = left_forward;
                 }
             }
-            break;
-        case TURN_CENTER:
-            slow_left();
-            if(zero_point_one){
-               zero_point_one = 0;
-               center_time++;
-               if(center_time >= 15){
-                   segment = FIND_CENTER;
-                   center_time = 0;
-               }
-           }
-            break;
-
-        case FIND_CENTER:
-            fast_forward();
-            if(one_second){
-               one_second = 0;
-               forward_time++;
-               if(forward_time >= 3){
-                   no_movement();
-                   segment = WAIT_CASE;
-                   forward_time = 0;
-               }
-           }
             break;
         default: break;
     }
@@ -231,7 +217,7 @@ void black_flag(void){
     left_turn_flag = 0;
     intersect_flag = 0;
 
-    if(ADC_Right_Detect >= 700 && ADC_Left_Detect >= 780){
+    if(ADC_Right_Detect >= 730 || ADC_Left_Detect >= 780){
         intersect_flag = 1;
     }
 

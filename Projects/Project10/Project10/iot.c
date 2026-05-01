@@ -18,16 +18,20 @@ unsigned int iot_state = 0;
 unsigned int iot_status = IDLE;
 unsigned int iot_startup_timer = 0;
 unsigned int configured_flag = 0;
+unsigned int detect_enable = 1;
+unsigned int leave_flag = 0;
+
 char iot_input;
 int command_1 = 0;
 int command_2 = 0;
+
 unsigned int run_time = 0;
 unsigned int run_time3 = 0;
 unsigned int run_time2 = 0;
 unsigned int run_time1 = 0;
 unsigned int run_time0 = 0;
-
 unsigned int command_counter = 0;
+unsigned int forward_time = 0;
 
 unsigned int advance_0 = 0;
 unsigned int advance_1 = 0;
@@ -192,9 +196,9 @@ void IOT_State(void){
                 display_line[2][4] = ssid_string[11];
                 display_line[2][5] = ssid_string[12];
                 display_line[2][6] = ssid_string[13];
-                display_line[2][7] = ' ';
-                display_line[2][8] = ' ';
-                display_line[2][9] = ' ';
+                display_line[2][7] = 0x20;
+                display_line[2][8] = 0x20;
+                display_line[2][9] = 0x20;
                 display_changed = 1;
             }
             if(ok_received){
@@ -210,6 +214,16 @@ void IOT_State(void){
             }
             break;
         case IOT_RUN:
+            if(sw1_position){
+                sw1_position = 0;
+                sw2_position = 0;
+                strcpy(display_line[3], "Input CMDs");
+                display_changed = 1;
+                detect_enable = 0;
+            }
+            if(detect_enable){
+                detect();                          //Constantly detects ADC hex values and converts BCD values to the screen
+            }
             rx_process_iot();
             IOT_Process();
             break;
@@ -218,8 +232,16 @@ void IOT_State(void){
 }
 
 void IOT_Process(void){
-    unsigned int tens_place = run_time / 10;
-    unsigned int ones_place = run_time % 10;
+    unsigned int ones_place_c = run_time % 10;
+    unsigned int tens_place_c = (run_time / 10) % 10;
+    unsigned int hundreds_place_c = (run_time / 100) % 10;
+    unsigned int thousands_place_c = (run_time / 1000) % 10;
+
+    unsigned int straight_time = (tens_place_c * 10) + ones_place_c;
+    unsigned int turn_1_time = straight_time + 7;
+    unsigned int seek_time = ((thousands_place_c * 10) + hundreds_place_c) + turn_1_time;
+    unsigned int turn_2_time = seek_time + 7;
+    unsigned int forward_seek = (thousands_place_c * 10) + hundreds_place_c;
 
     if (command_flag && (iot_state != RECEIVE)){
         switch (iot_state){
@@ -230,11 +252,9 @@ void IOT_Process(void){
                 reset_command_values();
                 break;
             case 'F':
-                strcpy(display_line[3], "F0000   ms");
-                display_line[3][3] = tens_place + '0';
-                display_line[3][4] = ones_place + '0';
-                display_line[3][6] = tens_place + '0';
-                display_line[3][7] = ones_place + '0';
+                strcpy(display_line[3], "F0000     ");
+                display_line[3][3] = tens_place_c + '0';
+                display_line[3][4] = ones_place_c + '0';
                 display_changed = 1;
 
                 medium_forward();
@@ -255,11 +275,9 @@ void IOT_Process(void){
                 }
                 break;
             case 'B':
-                strcpy(display_line[3], "B0000   ms");
-                display_line[3][3] = tens_place + '0';
-                display_line[3][4] = ones_place + '0';
-                display_line[3][6] = tens_place + '0';
-                display_line[3][7] = ones_place + '0';
+                strcpy(display_line[3], "B0000     ");
+                display_line[3][3] = tens_place_c + '0';
+                display_line[3][4] = ones_place_c + '0';
                 display_changed = 1;
 
                 medium_reverse();
@@ -280,9 +298,9 @@ void IOT_Process(void){
                 }
                 break;
             case 'L':
-                strcpy(display_line[3], "L0000   ms");
-                display_line[3][4] = run_time + '0';
-                display_line[3][7] = run_time + '0';
+                strcpy(display_line[3], "L0000     ");
+                display_line[3][3] = tens_place_c + '0';
+                display_line[3][4] = ones_place_c + '0';
                 display_changed = 1;
                 medium_left();
                 if(zero_point_one){
@@ -302,16 +320,15 @@ void IOT_Process(void){
                 }
                 break;
             case 'R':
-                strcpy(display_line[3], "R0000   ms");
-                display_line[3][4] = run_time + '0';
-                display_line[3][7] = run_time + '0';
+                strcpy(display_line[3], "R0000     ");
+                display_line[3][3] = tens_place_c + '0';
+                display_line[3][4] = ones_place_c + '0';
                 display_changed = 1;
                 medium_right();
                 if(zero_point_one){
                     zero_point_one = 0;
                     command_counter++;
                 }
-
                 if(command_counter >= run_time){
                     no_movement();
                     command_counter = 0;
@@ -329,6 +346,77 @@ void IOT_Process(void){
                 display_changed = 1;
                 reset_command_values();
                 break;
+            case 'D':
+                if (zero_point_one){
+                    zero_point_one = 0;
+                    forward_time++;
+                    if (forward_time < straight_time){
+                        RIGHT_FORWARD_SPEED = 14800;
+                        LEFT_FORWARD_SPEED = 15000;
+                    }
+                    if (forward_time >= straight_time){
+                        no_movement();
+                        medium_left();
+                    }
+                    if (forward_time >= turn_1_time){
+                        no_movement();
+                        RIGHT_FORWARD_SPEED = 14800;
+                        LEFT_FORWARD_SPEED = 15000;
+                    }
+                    if (forward_time >= seek_time){
+                        no_movement();
+                        medium_left();
+                    }
+                    if (forward_time >= turn_2_time){
+                        forward_time = 0;
+                        seek_counter = 0;
+                        no_movement();
+                        reset_command_values();
+                        strcpy(display_line[0], "ARRIVED: 08 ");
+                    }
+                }
+                break;
+            case 'S':
+                if(tens_place_c == 1){
+                    if(zero_point_one){
+                        zero_point_one = 0;
+                        command_counter++;
+                        if(command_counter < ones_place_c){
+                            medium_right();
+                        }
+                        if(command_counter >= ones_place_c){
+                            no_movement();
+                            RIGHT_FORWARD_SPEED = 14800;
+                            LEFT_FORWARD_SPEED = 15000;
+                        }
+                        if(command_counter >= (ones_place_c + forward_seek)){
+                            reset_command_values();
+                            leave_flag = 1;
+                        }
+                    }
+                }else{
+                    if(zero_point_one){
+                        zero_point_one = 0;
+                        command_counter++;
+                        if(command_counter < ones_place_c){
+                            medium_left();
+                        }
+                        if(command_counter >= ones_place_c){
+                            no_movement();
+                            RIGHT_FORWARD_SPEED = 14800;
+                            LEFT_FORWARD_SPEED = 15000;
+                        }
+                        if(command_counter >= (ones_place_c + forward_seek)){
+                            reset_command_values();
+                            leave_flag = 1;
+                        }
+                    }
+                }
+                break;
+            case 'O':
+                leave_flag = 0;
+                medium_forward();
+                break;
             default:
                 no_movement();
                 reset_command_values();
@@ -345,7 +433,7 @@ void IOT_Process(void){
 
     while((iot_input = display_iot_rx_message[input_rd++]) != '\0'){
         if(command_flag && (iot_state == RECEIVE)){
-            if((iot_input == 'F') || (iot_input == 'B') || (iot_input == 'L') || (iot_input == 'R') || (iot_input == '^') || (iot_input == 'A')){
+            if((iot_input == 'F') || (iot_input == 'B') || (iot_input == 'L') || (iot_input == 'R') || (iot_input == '^') || (iot_input == 'A') || (iot_input == 'S') || (iot_input == 'O') || (iot_input == 'D')){
                 if(!command_1){
                     command_1 = iot_input;
                 }

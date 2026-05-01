@@ -18,7 +18,6 @@ void Init_DAC(void);
 // Interrupts
 void enable_interrupts(void);
 __interrupt void Timer0_B0_ISR(void);
-__interrupt void switch_interrupt(void);
 
 // Analog to Digital Converter
 void detect(void);
@@ -30,8 +29,6 @@ void Init_Clocks(void);
 
 // LED Configurations
 void Init_LEDs(void);
-void IR_LED_control(char selection);
-void Backlite_control(char selection);
 
   // LCD
 void Display_Process(void);
@@ -65,7 +62,6 @@ void SetPostion(char pos);
 void DisplayOnOff(char data);
 void lcd_BIG_mid(void);
 void lcd_BIG_bot(void);
-void lcd_120(void);
 
 void lcd_4line(void);
 void lcd_out(char *s, char line, char position);
@@ -73,16 +69,10 @@ void lcd_rotate(char view);
 
 //void lcd_write(char data, char command);
 void lcd_write(unsigned char c);
-void lcd_write_line1(void);
-void lcd_write_line2(void);
 void lcd_write_line3(void);
 
 void lcd_command( char data);
 void LCD_test(void);
-void LCD_iot_meassage_print(int nema_index);
-
-// Menu
-void Menu_Process(void);
 
 // Ports
 void Init_Ports(void);
@@ -107,36 +97,16 @@ void WriteIns(char instruction);
 void WriteData(char data);
 
 // Switches
-void Init_Switches(void);
-void switch_control(void);
-void enable_switch_SW1(void);
-void enable_switch_SW2(void);
-void disable_switch_SW1(void);
-void disable_switch_SW2(void);
-void Switches_Process(void);
-void Init_Switch(void);
-void Switch_Process(void);
-void Switch1_Process(void);
-void Switch2_Process(void);
-void menu_act(void);
-void menu_select(void);
 void Switch_mode(void);
 void Switch_mode_2(void);
 
 // Timers
-void Init_Timers(void);
 void Init_Timer_B0(void);
-void Init_Timer_B1(void);
-void Init_Timer_B2(void);
 void Init_Timer_B3(void);
-void delay (int);
-void small_delay (int);
 
 void usleep(unsigned int usec);
 void usleep10(unsigned int usec);
 void five_msec_sleep(unsigned int msec);
-void measure_delay(void);
-void out_control_words(void);
 
 //----------------------------
 // PWM speed movement calls
@@ -170,8 +140,6 @@ void lucid_right(void);
 
 //Serial communication
 void Init_Serial_UCA0(int speed);
-void serial_update(void);
-void rx_process_usb(void);
 void rx_process_iot(void);
 void IOT_Process(void);
 void IOT_State(void);
@@ -180,4 +148,5 @@ void initial_process_iot(void);
 //Project 10 Functions
 void black_line(void);
 void project_10_arc(void);
-
+void goldy_left(void);
+void goldy_right(void);

@@ -45,8 +45,11 @@ extern char ones;
 extern volatile int condition;
 extern int delay_amount;
 extern int small_delay_amount;
+extern unsigned int command_counter;
+extern unsigned int seek_counter;
 extern unsigned int line_detection_flag;
 extern unsigned int first;
+extern unsigned int leave_flag;
 
 //Speed from PWM (for ramp up)
 extern volatile int left_forward;
