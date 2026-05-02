@@ -416,6 +416,16 @@ void IOT_Process(void){
             case 'O':
                 leave_flag = 0;
                 medium_forward();
+                if(one_second){
+                    one_second = 0;
+                    command_counter++;
+                    if(command_counter >= 3){
+                        no_movement();
+                        reset_command_values();
+                        strcpy(display_line[0], "BL STOP   ");
+                        display_changed = 1;
+                    }
+                }
                 break;
             default:
                 no_movement();

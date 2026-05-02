@@ -120,7 +120,7 @@ void black_line(void){
             if(zero_point_one){
                 zero_point_one = 0;
                 small_delay_amount++;
-                if(small_delay_amount >= 8){
+                if(small_delay_amount >= 6){
                     no_movement();
                     segment = WAIT_CASE;
                     small_delay_amount = 0;
@@ -141,9 +141,11 @@ void black_line(void){
             strcpy(display_line[0], "BL TURN   ");
             display_changed = 1;
             if(left_turn_flag){
+                left_turn_flag = 0;
                 no_movement();
                 slow_left();
                 if(full_turn_flag){
+                    full_turn_flag = 0;
                     no_movement();
                     segment = DISPLAY_CHECK;
                     saved_case = NAV_LINE;
@@ -151,16 +153,27 @@ void black_line(void){
             }
             if(full_turn_flag){
                 no_movement();
+                full_turn_flag = 0;
                 saved_case = NAV_LINE;
                 segment = DISPLAY_CHECK;
             }
             break;
         case NAV_LINE:
             if(speed_update){
-                circle_time++;
+                if(one_second){
+                    one_second = 0;
+                    circle_time++;
+                    if(circle_time >= 15){
+                        circle_time = 0;
+                        no_movement();
+                        strcpy(display_line[0], "BL CIRCLE ");
+                        display_changed = 1;
+                        segment = WAIT_CASE;
+                        saved_case = NAV_LINE;
+                    }
+                }
                 speed_update = 0;
                 int min_speed = 5000;
-                strcpy(display_line[0], "BL CIRCLE  ");
                 display_changed = 1;
 
 
@@ -182,7 +195,7 @@ void black_line(void){
                 right_forward = GOLDY - correction;
                 left_forward = GOLDY + correction;
 
-                if(right_forward > left_forward){
+                if(correction < 0){
                     last_dir = 0;
                 }else{
                     last_dir = 1;
@@ -194,15 +207,16 @@ void black_line(void){
                 if(right_forward < min_speed) right_forward = min_speed;
                 if(left_forward < min_speed) left_forward = min_speed;
 
-                if((ADC_Right_Detect < white_value_R) && (ADC_Left_Detect < white_value_L)){
+                if((ADC_Right_Detect <= (white_value_R * 1.01 )) && (ADC_Left_Detect <= (white_value_L * 1.01))){
                     no_movement();
                     if(last_dir){
-                        goldy_left();
+                        medium_left();
                     }else{
-                        goldy_right();
+                        medium_right();
                     }
                 }
                 else {
+                    no_movement();
                     RIGHT_FORWARD_SPEED = right_forward;
                     LEFT_FORWARD_SPEED  = left_forward;
                 }

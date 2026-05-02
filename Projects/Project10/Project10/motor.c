@@ -140,8 +140,8 @@ void fast_right(void){
     LEFT_FORWARD_SPEED = FAST;
     RIGHT_REVERSE_SPEED = FAST;
 }
-//------------------------------------------
 
+//------------------------------------------
 //------------------------------------------
 //   max speed for forwards, backwards, left and right
 //------------------------------------------

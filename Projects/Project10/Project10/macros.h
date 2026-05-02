@@ -36,7 +36,7 @@
 //PWM definitions for wheel speed
 #define WHEEL_OFF               (0)         // 0% duty cycle
 #define SLOW                    (7500)      // 15% duty cycle
-#define GOLDY                   (12000)     // 24% duty cycle
+#define GOLDY                   (9000)     // 22% duty cycle
 #define MEDIUM                  (15000)     // 30% duty cycle
 #define FAST                    (40000)     // 80% duty cycle
 #define LUCID                   (50000)     // 100% duty cycle

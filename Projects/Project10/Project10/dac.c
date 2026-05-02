@@ -26,7 +26,7 @@ void Init_DAC(void){
     SAC3OA |= OAEN; // Enable OA
 
     DAC_data = DAC_Begin; // Starting Low value for DAC output [2v]
-    SAC3DAT = DAC_data; // Initial DAC data
+    SAC3DAT = DAC_Adjust; // Initial DAC data
 
     TB0CTL |= TBIE; // Timer B0 overflow interrupt enable
     P6OUT |= GRN_LED;
